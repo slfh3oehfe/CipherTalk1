@@ -10,8 +10,8 @@ app = Flask(__name__)
 app.secret_key = secrets.token_hex(32)
 app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
-DB_PATH = '/data/messenger.db'
-os.makedirs('uploads', exist_ok=True)
+DB_PATH = '/tmp/messenger.db'
+os.makedirs('/tmp/uploads', exist_ok=True)
 
 # ── In-memory queues ──────────────────────────────────────────────────────────
 # One lock, two separate queues: chat events and call signals.
@@ -369,4 +369,3 @@ if __name__ == '__main__':
         ctx=None; proto='http'
     print(f"\n🔐 CipherTalk  →  {proto}://{local_ip}:5000\n")
     app.run(debug=False, threaded=True, host='0.0.0.0', port=5000, ssl_context=ctx)
-
