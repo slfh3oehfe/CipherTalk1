@@ -1,12 +1,6 @@
 app = "ciphertalker"
 primary_region = "jed"
 
-[build]
-  builder = "paketobuildpacks/builder:base"
-
-[env]
-  PORT = "8080"
-
 [http_service]
   internal_port = 8080
   force_https = true
@@ -19,19 +13,7 @@ primary_region = "jed"
   cpus = 1
 ```
 
-`jed` = Jeddah, Saudi Arabia — the closest region to you.
-
-**4. Add a `Procfile`**
+Delete everything else in that file including the backticks and the Jeddah comment line. Save and commit, then pull the changes:
 ```
-web: gunicorn app:app --bind 0.0.0.0:8080
-```
-
-**5. Deploy**
-```
+git pull
 fly launch
-fly deploy
-```
-
-**6. Persistent storage for the database**
-```
-fly volumes create data --size 1
