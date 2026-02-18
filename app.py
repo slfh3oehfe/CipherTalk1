@@ -343,6 +343,10 @@ def index():
             headers={'Content-Encoding':'gzip','Vary':'Accept-Encoding','Cache-Control':'no-store'})
     return html
 
+@app.route('/ping')
+def ping():
+    return 'ok'
+
 if __name__ == '__main__':
     init_db(); get_master()
     try:
@@ -356,4 +360,5 @@ if __name__ == '__main__':
     else:
         ctx=None; proto='http'
     print(f"\n🔐 CipherTalk  →  {proto}://{local_ip}:5000\n")
+
     app.run(debug=False, threaded=True, host='0.0.0.0', port=5000, ssl_context=ctx)
