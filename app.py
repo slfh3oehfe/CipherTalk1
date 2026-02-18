@@ -180,10 +180,18 @@ def list_users():
 def get_messages(peer):
     u = current_user()
     if not u: return jsonify({'error':'Unauthorized'}), 401
+    after = request.args.get('after', 0, type=int)
     with get_db() as conn:
-        rows = conn.execute(
-            "SELECT * FROM messages WHERE (sender=? AND recipient=?) OR (sender=? AND recipient=?) ORDER BY timestamp",
-            (u,peer,peer,u)).fetchall()
+        if after:
+            rows = conn.execute(
+                "SELECT * FROM messages WHERE ((sender=? AND recipient=?) OR (sender=? AND recipient=?)) AND id>? ORDER BY timestamp",
+                (u,peer,peer,u,after)).fetchall()
+        else:
+            # Only load last 50 messages on first open
+            rows = conn.execute(
+                "SELECT * FROM messages WHERE (sender=? AND recipient=?) OR (sender=? AND recipient=?) ORDER BY timestamp DESC LIMIT 50",
+                (u,peer,peer,u)).fetchall()
+            rows = list(reversed(rows))
     result = []
     for r in rows:
         try: content = decrypt(r['ciphertext'],r['nonce'],u,peer).decode('utf-8')
