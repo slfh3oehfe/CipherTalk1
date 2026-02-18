@@ -536,7 +536,7 @@ function showApp() {
   $('auth').style.display='none';$('app').style.display='block';
   $('myav').textContent=me[0].toUpperCase();$('myname').textContent=me;
   loadUsers();connectSSE();setupDrop();
-  pollH=setInterval(autoPoll,3000);
+  pollH=setInterval(autoPoll,8000);
   callPollLoop();
   renderNBadge();renderNotifs();checkNotifPerm();
 }
@@ -635,7 +635,11 @@ function appendNew(msgs,p) {
 }
 async function autoPoll() {
   if(!peer||!token)return;
-  try{const r=await fetch(`/api/messages/${peer}`,{headers:{'X-Auth-Token':token}});if(r.ok)appendNew((await r.json()).messages,peer);}catch(_){}
+  try{
+    const after=lastId[peer]||0;
+    const r=await fetch(`/api/messages/${peer}?after=${after}`,{headers:{'X-Auth-Token':token}});
+    if(r.ok)appendNew((await r.json()).messages,peer);
+  }catch(_){}
 }
 
 // ── Sending ────────────────────────────────────────────────────────────────
