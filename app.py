@@ -50,6 +50,7 @@ def pop_call(username):
     return msgs
 
 # ── DB ────────────────────────────────────────────────────────────────────────
+
 def get_db():
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     conn.row_factory = sqlite3.Row
@@ -109,7 +110,7 @@ def decrypt(ct_b64, nonce_b64, a, b):
     return AESGCM(conv_key(a,b)).decrypt(base64.b64decode(nonce_b64), base64.b64decode(ct_b64), None)
 
 def hash_pw(pw, salt):
-    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt.encode(), iterations=260000)
+    kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32, salt=salt.encode(), iterations=50000)
     return base64.b64encode(kdf.derive(pw.encode())).decode()
 
 def get_token():
@@ -123,6 +124,10 @@ def current_user():
         if row and datetime.fromisoformat(row['expires_at']) > datetime.utcnow():
             return row['username']
     return None
+
+# ── Init (runs on gunicorn import too, not just __main__) ─────────────────────
+init_db()
+get_master()
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
 @app.route('/api/signup', methods=['POST'])
@@ -185,8 +190,7 @@ def get_messages(peer):
         except: content = '[decryption error]'
         result.append({'id':r['id'],'sender':r['sender'],'content':content,
             'msg_type':r['msg_type'],'file_name':r['file_name'],
-            'file_mime':r['file_mime'],'duration':r['duration'],
-            'timestamp':r['timestamp']})
+            'file_mime':r['file_mime'],'timestamp':r['timestamp']})
     return jsonify({'messages':result})
 
 @app.route('/api/messages/<peer>', methods=['POST'])
@@ -343,10 +347,6 @@ def index():
             headers={'Content-Encoding':'gzip','Vary':'Accept-Encoding','Cache-Control':'no-store'})
     return html
 
-@app.route('/ping')
-def ping():
-    return 'ok'
-
 if __name__ == '__main__':
     init_db(); get_master()
     try:
@@ -360,5 +360,4 @@ if __name__ == '__main__':
     else:
         ctx=None; proto='http'
     print(f"\n🔐 CipherTalk  →  {proto}://{local_ip}:5000\n")
-
     app.run(debug=False, threaded=True, host='0.0.0.0', port=5000, ssl_context=ctx)
