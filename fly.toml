@@ -11,9 +11,3 @@ primary_region = "jed"
   memory = "256mb"
   cpu_kind = "shared"
   cpus = 1
-```
-
-Delete everything else in that file including the backticks and the Jeddah comment line. Save and commit, then pull the changes:
-```
-git pull
-fly launch
